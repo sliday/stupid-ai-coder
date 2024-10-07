@@ -44,6 +44,7 @@ The script does this by talking to AI language models, which are like really sma
 ## Output
 
 The script generates a project folder containing:
+![CleanShot 2024-10-07 at 23 32 12@2x](https://github.com/user-attachments/assets/46f0f59f-6e97-4d99-ab5b-c1f0bd8d7909)
 
 - Final code file
 - README.md
