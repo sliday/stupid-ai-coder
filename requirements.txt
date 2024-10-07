@@ -2,3 +2,4 @@ colorama
 tqdm
 emoji
 ell
+psutil
