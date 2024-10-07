@@ -2,6 +2,8 @@
 
 Stupid AI Coder is a rather silly Python script that uses AI to make and improve code projects automatically. Here's how it works in simple terms:
 
+![outputFast](https://github.com/user-attachments/assets/f9b96140-ce48-4462-8962-adf982953f36)
+
 1. You tell it what kind of program you want to make. Don't limit yourself, get creative! Use any language you like.
 2. You pick which AI "brain" to use (like Claude, GPT-4o-mini, or local Llama3.2).
 3. The AI writes some basic boilerplate code to start with.
