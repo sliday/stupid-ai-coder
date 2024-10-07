@@ -18,6 +18,7 @@ import time
 import threading
 import signal
 import psutil
+import argparse
 
 # Initialize colorama for cross-platform colored terminal output
 init(autoreset=True)
@@ -394,17 +395,44 @@ def test_solution(filename: str) -> Optional[str]:
         # Ensure all child processes are terminated
         kill_child_processes(os.getpid())
 
+def read_rfc_from_file(file_path: str) -> str:
+    """Read the RFC (Request for Code) from a text file."""
+    try:
+        with open(file_path, 'r') as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        print(emoji.emojize(f"{Fore.RED}:x: Error: RFC file not found.{Style.RESET_ALL}"))
+        return ""
+    except Exception as e:
+        print(emoji.emojize(f"{Fore.RED}:x: Error reading RFC file: {str(e)}{Style.RESET_ALL}"))
+        return ""
+
 async def main():
     """Main function to orchestrate the AI code generation process."""
     try:
+        parser = argparse.ArgumentParser(description="Monolyth AI Code Generator")
+        parser.add_argument("-f", "--file", help="Path to the RFC text file")
+        args = parser.parse_args()
+
         print(emoji.emojize(f"{Fore.CYAN}:robot: Welcome to the Monolyth AI Code Generator! :rocket:{Style.RESET_ALL}"))
-        task = input(emoji.emojize(f"{Fore.YELLOW}:thought_balloon: What should I code? (Example: code tetris game) {Style.RESET_ALL}"))
+        
+        if args.file:
+            task = read_rfc_from_file(args.file)
+            if not task:
+                return
+            print(emoji.emojize(f"{Fore.GREEN}:page_facing_up: RFC loaded from file: {args.file}{Style.RESET_ALL}"))
+        else:
+            task = input(emoji.emojize(f"{Fore.YELLOW}:thought_balloon: What should I code? (Example: code tetris game) {Style.RESET_ALL}"))
+        
         iterations = int(input(emoji.emojize(f"{Fore.YELLOW}🔁 How many iterations? (up to 20) {Style.RESET_ALL}")))
         
         if iterations < 1 or iterations > 20:
             raise ValueError("Iterations must be between 1 and 20.")
 
         model = get_model_choice()
+        
+        # New prompt for auto-testing
+        use_auto_test = input(emoji.emojize(f"{Fore.YELLOW}:test_tube: Use auto-testing? (y/N) {Style.RESET_ALL}")).lower() == 'y'
         
         # Override the model for the LMPs
         generate_initial_code.model = model
@@ -447,28 +475,31 @@ async def main():
                     f.write(extracted_code)
                 print(f"{Fore.GREEN}Improved code saved to {filename}{Style.RESET_ALL}")
                 
-                # Test and further improve only on the final iteration, with a maximum of 3 attempts
-                if i == iterations:
-                    print(f"{Fore.YELLOW}Testing final iteration...{Style.RESET_ALL}")
-                    error = test_solution(filename)
-                    attempts = 0
-                    while error and attempts < 3:
-                        print(emoji.emojize(f"{Fore.YELLOW}:warning: Error detected in final iteration. Attempt {attempts + 1}/3{Style.RESET_ALL}"))
-                        improved_code = await improve_code_smart(extracted_code, i, previous_versions, model, error, use_parallel=i > 5)
-                        extracted_code = extract_and_clean_code(improved_code)
-                        if extracted_code:
-                            with open(filename, "w") as f:
-                                f.write(extracted_code)
-                            error = test_solution(filename)
-                        else:
-                            print(emoji.emojize(f"{Fore.RED}:x: Failed to extract valid code in final iteration, attempt {attempts + 1}{Style.RESET_ALL}"))
-                            break
-                        attempts += 1
-                    
-                    if attempts == 3 and error:
-                        print(emoji.emojize(f"{Fore.RED}:x: Failed to fix errors after 3 attempts in final iteration{Style.RESET_ALL}"))
-                    elif not error:
-                        print(f"{Fore.GREEN}Final iteration passed testing{Style.RESET_ALL}")
+                # Test and further improve only if auto-testing is enabled
+                if use_auto_test:
+                    if i == iterations:
+                        print(f"{Fore.YELLOW}Testing final iteration...{Style.RESET_ALL}")
+                        error = test_solution(filename)
+                        attempts = 0
+                        while error and attempts < 3:
+                            print(emoji.emojize(f"{Fore.YELLOW}:warning: Error detected in final iteration. Attempt {attempts + 1}/3{Style.RESET_ALL}"))
+                            improved_code = await improve_code_smart(extracted_code, i, previous_versions, model, error, use_parallel=i > 5)
+                            extracted_code = extract_and_clean_code(improved_code)
+                            if extracted_code:
+                                with open(filename, "w") as f:
+                                    f.write(extracted_code)
+                                error = test_solution(filename)
+                            else:
+                                print(emoji.emojize(f"{Fore.RED}:x: Failed to extract valid code in final iteration, attempt {attempts + 1}{Style.RESET_ALL}"))
+                                break
+                            attempts += 1
+                        
+                        if attempts == 3 and error:
+                            print(emoji.emojize(f"{Fore.RED}:x: Failed to fix errors after 3 attempts in final iteration{Style.RESET_ALL}"))
+                        elif not error:
+                            print(f"{Fore.GREEN}Final iteration passed testing{Style.RESET_ALL}")
+                else:
+                    print(f"{Fore.YELLOW}Auto-testing is disabled. Skipping test phase.{Style.RESET_ALL}")
                 
                 # Visualize diff if not the first iteration
                 if i > 1:

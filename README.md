@@ -21,6 +21,7 @@ The script does this by talking to AI language models, which are like really sma
 - Project folder structure generation
 - README and requirements.txt file creation
 - Colorful console output with progress indicators
+- Option to input task description from a file
 
 ## Usage
 
@@ -35,9 +36,14 @@ The script does this by talking to AI language models, which are like really sma
    ```
    python ai-coder.py
    ```
+   
+   Or, to use a file as input for the task description:
+   ```
+   python ai-coder.py -f path/to/your/task_description.txt
+   ```
 
 4. Follow the prompts:
-   - Enter your coding task description
+   - Enter your coding task description (if not using a file input)
    - Choose the number of iterations (1-20)
    - Select an AI model
 
@@ -68,6 +74,7 @@ You can modify the script to adjust:
 - The quality of the generated code depends on the chosen AI model and the clarity of the task description.
 - Always review and test the generated code before using it in production environments.
 - The script requires an active internet connection to communicate with AI models.
+- When using a file input, ensure the task description is clear and detailed for best results.
 
 ## Contributing
 
