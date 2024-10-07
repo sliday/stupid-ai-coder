@@ -1,0 +1,4 @@
+colorama
+tqdm
+emoji
+ell
